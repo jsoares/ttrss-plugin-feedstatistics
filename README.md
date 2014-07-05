@@ -32,6 +32,6 @@ v1.0 - Initial Release (2014-07-05)
 Links
 -----
 
-For discussion, please see the following thread on the Tiny Tiny RSS forums.
+For discussion, please see the following thread in the Tiny Tiny RSS forums.
 
-TODO
+http://tt-rss.org/forum/viewtopic.php?f=22&t=3069
