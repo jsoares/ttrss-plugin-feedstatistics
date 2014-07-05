@@ -37,7 +37,7 @@ class FeedStatistics extends Plugin {
 							AND owner_uid = {$owner_uid}");
 		if(db_num_rows($result)) {		
 			$row = db_fetch_assoc($result);
-			print_notice("From your " . $row['Feeds'] . " subscriptions, over the last {$interval} days you read " . $row['Posts'] . " items, starred " . $row['Starred'] . " items, and published " .  $row['Published'] . " items.");
+			print_notice("From your " . $row['Feeds'] . " subscriptions, over the last {$interval} days you read " . $row['Items'] . " items, starred " . $row['Starred'] . " items, and published " .  $row['Published'] . " items.");
 		}
 		
 		// Per-feed statistics

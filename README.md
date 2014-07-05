@@ -19,7 +19,9 @@ Installation
 ------------
 
 1) Upload the feedstatistics directory into [TT-RSS root directory]/plugins.
+
 2) Set the correct permissions, if neeeded.
+
 3) Enable the plugin by going to Preferences -> Plugins.
 
 Changelog
@@ -31,4 +33,5 @@ Links
 -----
 
 For discussion, please see the following thread on the Tiny Tiny RSS forums.
+
 TODO
