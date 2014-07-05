@@ -29,6 +29,8 @@ Changelog
 
 v1.0 - Initial Release (2014-07-05)
 
+v1.1 - Made compatible with pgSQL (2014-07-05)
+
 Links
 -----
 

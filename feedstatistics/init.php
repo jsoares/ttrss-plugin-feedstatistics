@@ -2,7 +2,7 @@
 class FeedStatistics extends Plugin {
 
 	function about() {
-		return array(1.0,
+		return array(1.1,
 			"Provides simple statistics on your feeds",
 			"jsoares",
 			false,
@@ -29,28 +29,38 @@ class FeedStatistics extends Plugin {
 			$purge_limit = db_fetch_result($result, 0, "value");
 			$interval = min($interval,$purge_limit);
 		}
+		$date = new DateTime();
+		$date->sub(new DateInterval("P{$interval}D"));
+		$datestr = $date->format("Y-m-d");
+		
+		// Sum does not support booleans in pgsql, hence we cast. Different types, though...
+		if (DB_TYPE == "pgsql") {
+			$type = 'INT';
+		} else {
+			$type = 'SIGNED';
+		}
 		
 		// Google Reader-like one-line summary
-		$result = db_query("SELECT COUNT(DISTINCT feed_id) AS `Feeds`, COUNT(DISTINCT ref_id) as `Items`, SUM(marked) as `Starred`, SUM(published) AS `Published`
+		$result = db_query("SELECT COUNT(DISTINCT feed_id) AS feeds, COUNT(DISTINCT ref_id) as items, SUM(CAST(marked AS {$type})) as starred, SUM(CAST(published AS {$type})) AS published
 							FROM ttrss_user_entries 				
-							WHERE last_read > DATE_SUB(CURDATE(),INTERVAL {$interval} DAY)
+							WHERE last_read > '{$datestr}'
 							AND owner_uid = {$owner_uid}");
 		if(db_num_rows($result)) {		
 			$row = db_fetch_assoc($result);
-			print_notice("From your " . $row['Feeds'] . " subscriptions, over the last {$interval} days you read " . $row['Items'] . " items, starred " . $row['Starred'] . " items, and published " .  $row['Published'] . " items.");
+			print_notice("From your " . $row['feeds'] . " subscriptions, over the last {$interval} days you read " . $row['items'] . " items, starred " . $row['starred'] . " items, and published " .  $row['published'] . " items.");
 		}
 		
 		// Per-feed statistics
-		$result = db_query("SELECT ttrss_feeds.title as `Feed`, ttrss_feed_categories.title as `Category`, COUNT(ref_id) as `Items`, 
-							SUM(marked) as `Starred`, SUM(published) AS `Published`, ROUND(COUNT(ref_id)/{$interval},2) as `Items/day`
+		$result = db_query("SELECT ttrss_feeds.title as feed, ttrss_feed_categories.title as category, COUNT(ref_id) as items, 
+							SUM(CAST(marked AS {$type})) as starred, SUM(CAST(published AS {$type})) AS published, ROUND(CAST(COUNT(ref_id) AS DECIMAL)/30,2) as items_day
 							FROM ttrss_user_entries 
 							INNER JOIN ttrss_feeds ON ttrss_user_entries.feed_id = ttrss_feeds.id
 							INNER JOIN ttrss_entries ON ttrss_user_entries.ref_id = ttrss_entries.id
-							INNER JOIN ttrss_feed_categories ON ttrss_feeds.cat_id=ttrss_feed_categories.id							
-							WHERE ttrss_entries.date_entered > DATE_SUB(CURDATE(),INTERVAL {$interval} DAY)
+							LEFT JOIN ttrss_feed_categories ON ttrss_feeds.cat_id=ttrss_feed_categories.id							
+							WHERE ttrss_entries.date_entered > '{$datestr}'
 							AND ttrss_user_entries.owner_uid = {$owner_uid}
-							GROUP BY feed_id
-							ORDER BY `Items/day` DESC");
+							GROUP BY feed, category
+							ORDER BY items_day DESC");
 		if(db_num_rows($result)) {
 			print "<table cellpadding=\"5\" class=\"feed-table\">";
 			print "<tr class=\"title\"><td>Feed</td><td>Category</td><td>Items</td><td>Starred</td><td>Published</td><td>Items/day</td></tr>";
