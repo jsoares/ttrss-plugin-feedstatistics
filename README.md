@@ -31,6 +31,8 @@ v1.0 - Initial Release (2014-07-05)
 
 v1.1 - Made compatible with pgSQL (2014-07-05)
 
+v1.2 - Fixed bug introduced in 1.1 in items/day calculation for low purge delays (2014-07-06)
+
 Links
 -----
 

@@ -2,7 +2,7 @@
 class FeedStatistics extends Plugin {
 
 	function about() {
-		return array(1.1,
+		return array(1.2,
 			"Provides simple statistics on your feeds",
 			"jsoares",
 			false,
@@ -52,7 +52,7 @@ class FeedStatistics extends Plugin {
 		
 		// Per-feed statistics
 		$result = db_query("SELECT ttrss_feeds.title as feed, ttrss_feed_categories.title as category, COUNT(ref_id) as items, 
-							SUM(CAST(marked AS {$type})) as starred, SUM(CAST(published AS {$type})) AS published, ROUND(CAST(COUNT(ref_id) AS DECIMAL)/30,2) as items_day
+							SUM(CAST(marked AS {$type})) as starred, SUM(CAST(published AS {$type})) AS published, ROUND(CAST(COUNT(ref_id) AS DECIMAL)/{$interval},2) as items_day
 							FROM ttrss_user_entries 
 							INNER JOIN ttrss_feeds ON ttrss_user_entries.feed_id = ttrss_feeds.id
 							INNER JOIN ttrss_entries ON ttrss_user_entries.ref_id = ttrss_entries.id
