@@ -27,11 +27,13 @@ Installation
 Changelog
 ---------
 
-v1.0 - Initial Release (2014-07-05)
+v1.00 - Initial Release (2014-07-05)
 
-v1.1 - Made compatible with pgSQL (2014-07-05)
+v1.01 - Made compatible with pgSQL (2014-07-05)
 
-v1.2 - Fixed bug introduced in 1.1 in items/day calculation for low purge delays (2014-07-06)
+v1.02 - Fixed bug introduced in 1.01 in items/day calculation for low purge delays (2014-07-06)
+
+v1.03 - Now also showing feeds with 0 posts in the period. Version changed to match expected format. (2014-07-08)
 
 Links
 -----
