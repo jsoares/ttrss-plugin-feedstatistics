@@ -35,6 +35,8 @@ v1.02 - Fixed bug introduced in 1.01 in items/day calculation for low purge dela
 
 v1.03 - Now also showing feeds with 0 posts in the period. Version changed to match expected format. (2014-07-08)
 
+v1.04 - Replaced sums with counts (2014-07-08)
+
 Links
 -----
 

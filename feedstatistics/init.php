@@ -33,15 +33,8 @@ class FeedStatistics extends Plugin {
 		$date->sub(new DateInterval("P{$interval}D"));
 		$datestr = $date->format("Y-m-d");
 		
-		// Sum does not support booleans in pgsql, hence we cast. Different types, though...
-		if (DB_TYPE == "pgsql") {
-			$type = 'INT';
-		} else {
-			$type = 'SIGNED';
-		}
-		
 		// Google Reader-like one-line summary
-		$result = db_query("SELECT COUNT(DISTINCT ttrss_feeds.id) AS feeds, COUNT(DISTINCT ref_id) as items, SUM(CAST(marked AS {$type})) as starred, SUM(CAST(published AS {$type})) AS published
+		$result = db_query("SELECT COUNT(DISTINCT ttrss_feeds.id) AS feeds, COUNT(DISTINCT ref_id) as items, COUNT(NULLIF(marked, false)) as starred, COUNT(NULLIF(published, false)) AS published
 							FROM ttrss_feeds
 							LEFT JOIN ttrss_user_entries ON ttrss_feeds.id = ttrss_user_entries.feed_id AND last_read > '{$datestr}'
 							WHERE ttrss_feeds.owner_uid = {$owner_uid}");
@@ -52,7 +45,7 @@ class FeedStatistics extends Plugin {
 		
 		// Per-feed statistics
 		$result = db_query("SELECT ttrss_feeds.title as feed, ttrss_feed_categories.title as category, COUNT(ref_id) as items, 
-							COALESCE(SUM(CAST(marked AS {$type})),0) as starred, COALESCE(SUM(CAST(published AS {$type})),0) AS published, ROUND(CAST(COUNT(ref_id) AS DECIMAL)/{$interval},2) as items_day
+							COUNT(NULLIF(marked, false)) as starred, COUNT(NULLIF(published, false)) AS published, ROUND(CAST(COUNT(ref_id) AS DECIMAL)/{$interval},2) as items_day
 							FROM ttrss_feeds
 							LEFT JOIN ttrss_user_entries ON ttrss_feeds.id = ttrss_user_entries.feed_id AND ttrss_user_entries.last_read > '{$datestr}'
 							LEFT JOIN ttrss_entries ON ttrss_user_entries.ref_id = ttrss_entries.id
