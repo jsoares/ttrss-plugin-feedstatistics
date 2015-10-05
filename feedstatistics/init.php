@@ -24,10 +24,12 @@ class FeedStatistics extends Plugin {
 		$interval = 30;
 		// However, if the purge limit is lower, adjust accordingly
 		$result = db_query("SELECT value FROM ttrss_user_prefs
-							WHERE pref_name = 'PURGE_OLD_DAYS' AND owner_uid = $owner_uid");
+							WHERE pref_name = 'PURGE_OLD_DAYS' AND owner_uid = $owner_uid AND profile IS NULL");
 		if (db_num_rows($result) == 1) {
 			$purge_limit = db_fetch_result($result, 0, "value");
-			$interval = min($interval,$purge_limit);
+			if ($purge_limit > 0) {
+				$interval = min($interval,$purge_limit);
+			}
 		}
 		$date = new DateTime();
 		$date->sub(new DateInterval("P{$interval}D"));
