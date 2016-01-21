@@ -33,11 +33,13 @@ v1.01 - Made compatible with pgSQL (2014-07-05)
 
 v1.02 - Fixed bug introduced in 1.01 in items/day calculation for low purge delays (2014-07-06)
 
-v1.03 - Now also showing feeds with 0 posts in the period. Version changed to match expected format. (2014-07-08)
+v1.03 - Now also showing feeds with 0 posts in the period. Version changed to match expected format (2014-07-08)
 
 v1.04 - Replaced sums with counts (2014-07-08)
 
 v1.05 - Fixed bug when purge is disabled (2015-10-05)
+
+v1.06 - Instead of just looking at recently read items, it now looks at marking/publishing dates (2016-01-21)
 
 Links
 -----
