@@ -41,6 +41,8 @@ v1.05 - Fixed bug when purge is disabled (2015-10-05)
 
 v1.06 - Instead of just looking at recently read items, it now looks at marking/publishing dates (2016-01-21)
 
+v1.07 - Rewrote database interaction to use PDO, following core changes (2017-01-22)
+
 Links
 -----
 
