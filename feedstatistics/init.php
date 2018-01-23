@@ -68,7 +68,7 @@ class FeedStatistics extends Plugin {
 							LEFT JOIN ttrss_entries ON ttrss_user_entries.ref_id = ttrss_entries.id
 							LEFT JOIN ttrss_feed_categories ON ttrss_feeds.cat_id = ttrss_feed_categories.id
 							WHERE ttrss_feeds.owner_uid = :owner
-							GROUP BY id, title, category
+							GROUP BY ttrss_feeds.id, ttrss_feeds.title, ttrss_feed_categories.title
 							ORDER BY items_day DESC");
 		$sth->execute(['date'=>$datestr, 'interval'=>$interval, 'owner'=>$owner_uid]);
 		$result = $sth->fetchAll(PDO::FETCH_ASSOC);
