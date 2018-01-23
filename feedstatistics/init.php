@@ -2,8 +2,8 @@
 class FeedStatistics extends Plugin {
 
 	function about() {
-		return array(1.07,
-			"Provides simple statistics on your feeds",
+		return array(1.08,
+			"Generates simple statistics on your feeds",
 			"jsoares",
 			false,
 			"");
@@ -56,7 +56,8 @@ class FeedStatistics extends Plugin {
 
 		// Per-feed statistics
 		$sth = $this->pdo->prepare("SELECT
-							ttrss_feeds.title AS feed,
+							ttrss_feeds.id AS id,
+							ttrss_feeds.title AS title,
 							ttrss_feed_categories.title AS category,
 							COUNT(NULLIF(last_read > :date, false)) AS items,
 							COUNT(NULLIF(last_marked > :date, false)) AS starred,
@@ -67,7 +68,7 @@ class FeedStatistics extends Plugin {
 							LEFT JOIN ttrss_entries ON ttrss_user_entries.ref_id = ttrss_entries.id
 							LEFT JOIN ttrss_feed_categories ON ttrss_feeds.cat_id = ttrss_feed_categories.id
 							WHERE ttrss_feeds.owner_uid = :owner
-							GROUP BY ttrss_feeds.id
+							GROUP BY id, title, category
 							ORDER BY items_day DESC");
 		$sth->execute(['date'=>$datestr, 'interval'=>$interval, 'owner'=>$owner_uid]);
 		$result = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -76,6 +77,7 @@ class FeedStatistics extends Plugin {
 			print "<table cellpadding=\"5\" class=\"feed-table\">";
 			print "<tr class=\"title\"><td>Feed</td><td>Category</td><td>Read</td><td>Starred</td><td>Published</td><td>Items/day</td></tr>";
 			foreach ($result as $row) {
+				array_shift($row);
 				print "<tr>";
 				foreach ($row as $key=>$value) {
 					print "<td>{$value}</td>";
