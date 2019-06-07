@@ -2,7 +2,7 @@
 class FeedStatistics extends Plugin {
 
 	function about() {
-		return array(1.08,
+		return array(1.09,
 			"Generates simple statistics on your feeds",
 			"jsoares",
 			false,
@@ -17,7 +17,8 @@ class FeedStatistics extends Plugin {
 	function hook_prefs_tab($args) {
 		if ($args != "prefFeeds") return;
 
-		print "<div dojoType=\"dijit.layout.AccordionPane\" title=\"".__("Statistics")."\">"; # start pane
+		print "<div dojoType=\"dijit.layout.AccordionPane\" 
+			title=\"<i class='material-icons'>extension</i> ".__('Feed stats (feedstatistics)')."\">";
 		
 		$owner_uid = $_SESSION["uid"] ? $_SESSION["uid"] : "NULL";
 		
