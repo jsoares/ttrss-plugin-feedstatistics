@@ -29,12 +29,16 @@ class FeedStatistics extends Plugin {
 							WHERE pref_name = 'PURGE_OLD_DAYS' AND owner_uid = ? AND profile IS NULL");
 		$sth->execute([$owner_uid]);
 		$result = $sth->fetch(PDO::FETCH_OBJ);
+		$purge_text = "The current configuration is to never purge items.";
+
 		if (isset($result->value)) {
 			$purge_limit = $result->value;
 			if ($purge_limit > 0) {
+				$purge_text = "The current configuration is to purge items after " . $purge_limit . " days.";
 				$interval = min($interval,$purge_limit);
 			}
 		}
+
 		$date = new DateTime();
 		$date->sub(new DateInterval("P{$interval}D"));
 		$datestr = $date->format("Y-m-d");
@@ -105,9 +109,9 @@ class FeedStatistics extends Plugin {
 		$result = $sth->fetch(PDO::FETCH_OBJ);
 		
 		print "<h2>All items statistics</h2>";
-		
+
 		if (isset($result->feeds)) {		
-			print_notice("From your {$result->feeds} subscriptions, there are {$result->items} total items and you read {$result->read_items} items, starred {$result->starred_items} items, and published {$result->published_items} items.");
+			print_notice("From your {$result->feeds} subscriptions, there are {$result->items} total items and you read {$result->read_items} items, starred {$result->starred_items} items, and published {$result->published_items} items. " . $purge_text);
 		}
 
 		// All items statistics
