@@ -39,7 +39,7 @@ class FeedStatistics extends Plugin {
 		$date->sub(new DateInterval("P{$interval}D"));
 		$datestr = $date->format("Y-m-d");
 		
-		// Google Reader-like one-line summary
+		// Google Reader-like one-line summary for recently read items
 		$sth = $this->pdo->prepare("SELECT
 							COUNT(DISTINCT ttrss_feeds.id) AS feeds,
 							COUNT(NULLIF(last_read > :date, false)) AS items,
@@ -51,11 +51,13 @@ class FeedStatistics extends Plugin {
 		$sth->execute(['date'=>$datestr, 'owner'=>$owner_uid]);
 		$result = $sth->fetch(PDO::FETCH_OBJ);
 		
+		print "<h2>Recent reading statistics</h2>";
+
 		if (isset($result->feeds)) {		
 			print_notice("From your {$result->feeds} subscriptions, over the last {$interval} days you read {$result->items} items, starred {$result->starred} items, and published {$result->published} items.");
 		}
 
-		// Per-feed statistics
+		// Per-feed reading statistics
 		$sth = $this->pdo->prepare("SELECT
 							ttrss_feeds.id AS id,
 							ttrss_feeds.title AS title,
@@ -75,8 +77,9 @@ class FeedStatistics extends Plugin {
 		$result = $sth->fetchAll(PDO::FETCH_ASSOC);
 		
 		if (count($result) > 0) {
+			print "<details><summary>Details</summary>";
 			print "<table cellpadding=\"5\" class=\"feed-table\">";
-			print "<tr class=\"title\"><td>Feed</td><td>Category</td><td>Read</td><td>Starred</td><td>Published</td><td>Items/day</td></tr>";
+			print "<tr class=\"title\"><th>Feed</th><th>Category</th><th>Read</th><th>Starred</th><th>Published</th><th>Items/day</th></tr>";
 			foreach ($result as $row) {
 				array_shift($row);
 				print "<tr>";
@@ -85,8 +88,61 @@ class FeedStatistics extends Plugin {
 				}
 				print "</tr>";
 			}
-			print "</table>";
-		}		
+			print "</table></details>";
+		}
+
+		// One-line summary for all items
+		$sth = $this->pdo->prepare("SELECT
+							COUNT(DISTINCT ttrss_feeds.id) AS feeds,
+							COUNT(ttrss_user_entries.int_id) AS items,
+							COUNT(ttrss_user_entries.last_read) AS read_items,
+							COUNT(ttrss_user_entries.last_marked) AS starred_items,
+							COUNT(ttrss_user_entries.last_published) AS published_items
+							FROM ttrss_feeds
+							LEFT JOIN ttrss_user_entries ON ttrss_feeds.id = ttrss_user_entries.feed_id
+							WHERE ttrss_feeds.owner_uid = :owner");
+		$sth->execute(['owner'=>$owner_uid]);
+		$result = $sth->fetch(PDO::FETCH_OBJ);
+		
+		print "<h2>All items statistics</h2>";
+		
+		if (isset($result->feeds)) {		
+			print_notice("From your {$result->feeds} subscriptions, there are {$result->items} total items and you read {$result->read_items} items, starred {$result->starred_items} items, and published {$result->published_items} items.");
+		}
+
+		// All items statistics
+		$sth = $this->pdo->prepare("SELECT
+							ttrss_feeds.id AS id,
+							ttrss_feeds.title AS title,
+							ttrss_feed_categories.title AS category,
+							COUNT(ttrss_user_entries.int_id) AS items,
+							COUNT(ttrss_user_entries.last_read) AS read_items,
+							COUNT(ttrss_user_entries.last_marked) AS starred_items,
+							COUNT(ttrss_user_entries.last_published) AS published_items
+							FROM ttrss_feeds
+							LEFT JOIN ttrss_user_entries ON ttrss_feeds.id = ttrss_user_entries.feed_id
+							LEFT JOIN ttrss_entries ON ttrss_user_entries.ref_id = ttrss_entries.id
+							LEFT JOIN ttrss_feed_categories ON ttrss_feeds.cat_id = ttrss_feed_categories.id
+							WHERE ttrss_feeds.owner_uid = :owner
+							GROUP BY ttrss_feeds.id, ttrss_feeds.title, ttrss_feed_categories.title
+							ORDER BY items DESC");
+		$sth->execute(['owner'=>$owner_uid]);
+		$result = $sth->fetchAll(PDO::FETCH_ASSOC);
+		
+		if (count($result) > 0) {
+			print "<details><summary>Details</summary>";
+			print "<table cellpadding=\"5\" class=\"feed-table\">";
+			print "<thead><tr class=\"title\"><th>Feed</th><th>Category</th><th>Total</th><th>Read</th><th>Starred</th><th>Published</th></tr></thead>";
+			foreach ($result as $row) {
+				array_shift($row);
+				print "<tr>";
+				foreach ($row as $key=>$value) {
+					print "<td>{$value}</td>";
+				}
+				print "</tr>";
+			}
+			print "</table></details>";
+		}
 		
 		print "</div>"; #pane
 	}
