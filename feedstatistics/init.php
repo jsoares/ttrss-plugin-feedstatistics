@@ -2,8 +2,8 @@
 class FeedStatistics extends Plugin {
 
 	function about() {
-		return array(1.09,
-			"Generates simple statistics on your feeds",
+		return array(1.10,
+			"Generates simple statistics for your feeds",
 			"jsoares",
 			false,
 			"");
@@ -17,24 +17,24 @@ class FeedStatistics extends Plugin {
 	function hook_prefs_tab($args) {
 		if ($args != "prefFeeds") return;
 
-		print "<div dojoType=\"dijit.layout.AccordionPane\" 
+		print "<div dojoType=\"dijit.layout.AccordionPane\"
 			title=\"<i class='material-icons'>extension</i> ".__('Feed stats (feedstatistics)')."\">";
-		
+
 		$owner_uid = $_SESSION["uid"] ? $_SESSION["uid"] : "NULL";
-		
-		// By default, use previous 30 days for statistics. 
+
+		// By default, use previous 30 days for statistics.
 		$interval = 30;
 		// However, if the purge limit is lower, adjust accordingly
 		$sth = $this->pdo->prepare("SELECT value FROM ttrss_user_prefs
-							WHERE pref_name = 'PURGE_OLD_DAYS' AND owner_uid = ? AND profile IS NULL");
-		$sth->execute([$owner_uid]);
+							WHERE pref_name = 'PURGE_OLD_DAYS' AND owner_uid = :owner AND profile IS NULL");
+		$sth->execute(['owner'=>$owner_uid]);
 		$result = $sth->fetch(PDO::FETCH_OBJ);
-		$purge_text = "The current configuration is to never purge items.";
 
+		$purge_text = "Your default configuration is to never purge items.";
 		if (isset($result->value)) {
 			$purge_limit = $result->value;
 			if ($purge_limit > 0) {
-				$purge_text = "The current configuration is to purge items after " . $purge_limit . " days.";
+				$purge_text = "Your default configuration is to purge items after {$purge_limit} days.";
 				$interval = min($interval,$purge_limit);
 			}
 		}
@@ -42,7 +42,7 @@ class FeedStatistics extends Plugin {
 		$date = new DateTime();
 		$date->sub(new DateInterval("P{$interval}D"));
 		$datestr = $date->format("Y-m-d");
-		
+
 		// Google Reader-like one-line summary for recently read items
 		$sth = $this->pdo->prepare("SELECT
 							COUNT(DISTINCT ttrss_feeds.id) AS feeds,
@@ -54,10 +54,10 @@ class FeedStatistics extends Plugin {
 							WHERE ttrss_feeds.owner_uid = :owner");
 		$sth->execute(['date'=>$datestr, 'owner'=>$owner_uid]);
 		$result = $sth->fetch(PDO::FETCH_OBJ);
-		
-		print "<h2>Recent reading statistics</h2>";
 
-		if (isset($result->feeds)) {		
+		print "<h2>Recent items</h2>";
+
+		if (isset($result->feeds)) {
 			print_notice("From your {$result->feeds} subscriptions, over the last {$interval} days you read {$result->items} items, starred {$result->starred} items, and published {$result->published} items.");
 		}
 
@@ -66,9 +66,9 @@ class FeedStatistics extends Plugin {
 							ttrss_feeds.id AS id,
 							ttrss_feeds.title AS title,
 							ttrss_feed_categories.title AS category,
-							COUNT(NULLIF(last_read > :date, false)) AS items,
-							COUNT(NULLIF(last_marked > :date, false)) AS starred,
-							COUNT(NULLIF(last_published > :date, false)) AS published,
+							COUNT(NULLIF(ttrss_user_entries.last_read > :date, false)) AS items,
+							COUNT(NULLIF(ttrss_user_entries.last_marked > :date, false)) AS starred,
+							COUNT(NULLIF(ttrss_user_entries.last_published > :date, false)) AS published,
 							ROUND(CAST(COUNT(NULLIF(last_read > :date, false)) AS DECIMAL) / :interval, 2) AS items_day
 							FROM ttrss_feeds
 							LEFT JOIN ttrss_user_entries ON ttrss_feeds.id = ttrss_user_entries.feed_id
@@ -79,10 +79,10 @@ class FeedStatistics extends Plugin {
 							ORDER BY items_day DESC");
 		$sth->execute(['date'=>$datestr, 'interval'=>$interval, 'owner'=>$owner_uid]);
 		$result = $sth->fetchAll(PDO::FETCH_ASSOC);
-		
+
 		if (count($result) > 0) {
 			print "<details><summary>Details</summary>";
-			print "<table cellpadding=\"5\" class=\"feed-table\">";
+			print "<table cellpadding=\"5\" class=\"feed-table\" style=\"text-align: left;\">";
 			print "<tr class=\"title\"><th>Feed</th><th>Category</th><th>Read</th><th>Starred</th><th>Published</th><th>Items/day</th></tr>";
 			foreach ($result as $row) {
 				array_shift($row);
@@ -107,10 +107,10 @@ class FeedStatistics extends Plugin {
 							WHERE ttrss_feeds.owner_uid = :owner");
 		$sth->execute(['owner'=>$owner_uid]);
 		$result = $sth->fetch(PDO::FETCH_OBJ);
-		
-		print "<h2>All items statistics</h2>";
 
-		if (isset($result->feeds)) {		
+		print "<h2>All items</h2>";
+
+		if (isset($result->feeds)) {
 			print_notice("From your {$result->feeds} subscriptions, there are {$result->items} total items and you read {$result->read_items} items, starred {$result->starred_items} items, and published {$result->published_items} items. " . $purge_text);
 		}
 
@@ -132,10 +132,10 @@ class FeedStatistics extends Plugin {
 							ORDER BY items DESC");
 		$sth->execute(['owner'=>$owner_uid]);
 		$result = $sth->fetchAll(PDO::FETCH_ASSOC);
-		
+
 		if (count($result) > 0) {
 			print "<details><summary>Details</summary>";
-			print "<table cellpadding=\"5\" class=\"feed-table\">";
+			print "<table cellpadding=\"5\" class=\"feed-table\" style=\"text-align: left;\">";
 			print "<thead><tr class=\"title\"><th>Feed</th><th>Category</th><th>Total</th><th>Read</th><th>Starred</th><th>Published</th></tr></thead>";
 			foreach ($result as $row) {
 				array_shift($row);
@@ -147,7 +147,7 @@ class FeedStatistics extends Plugin {
 			}
 			print "</table></details>";
 		}
-		
+
 		print "</div>"; #pane
 	}
 
